@@ -149,11 +149,8 @@ class _MyAppState extends State<MyApp> {
     final renderEditable = _findRenderEditable(renderObject);
     if (renderEditable == null) return Offset.zero;
 
-    final caretOffset = renderEditable
-        .getLocalRectForCaret(
-          _textFormController.selection.extent,
-        )
-        .bottomLeft;
+    final endPosition = TextPosition(offset: _textFormController.text.length);
+    final caretOffset = renderEditable.getLocalRectForCaret(endPosition).bottomLeft;
 
     final adjustedOffset = Offset(
       caretOffset.dx + contentPadding.left,
