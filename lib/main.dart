@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 void main() {
@@ -71,10 +72,6 @@ class _MyAppState extends State<MyApp> {
     final renderBox = _focusNode.context?.findRenderObject() as RenderBox?;
     if (renderBox == null) return;
 
-    final textFieldHeight = renderBox.size.height;
-
-    final textFieldOffset = renderBox.localToGlobal(Offset.zero);
-
     final textParts = _textFormController.text.split('.');
     final lastPart = textParts.last;
 
@@ -98,7 +95,7 @@ class _MyAppState extends State<MyApp> {
         child: CompositedTransformFollower(
           link: _layerLink,
           showWhenUnlinked: false,
-          offset: Offset(textFieldOffset.dx + caretOffset.dx, textFieldHeight + 16),
+          offset: Offset(caretOffset.dx, caretOffset.dy + 12),
           child: Material(
             color: Colors.transparent,
             child: Container(
@@ -146,34 +143,35 @@ class _MyAppState extends State<MyApp> {
 
   // getting the caret (cursor) position
   Offset _getCaretPosition() {
-    final renderBox = _focusNode.context?.findRenderObject() as RenderBox?;
-    if (renderBox == null) return Offset.zero;
-    final textFieldSize = renderBox.size;
+    final renderObject = _focusNode.context?.findRenderObject() as RenderBox?;
+    if (renderObject == null) return Offset.zero;
 
-    final textPainter = TextPainter(
-      text: TextSpan(
-        text: _textFormController.text,
-        style: GoogleFonts.spaceMono(
-          fontSize: Theme.of(context).textTheme.bodyMedium!.fontSize,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
+    final renderEditable = _findRenderEditable(renderObject);
+    if (renderEditable == null) return Offset.zero;
+
+    final caretOffset = renderEditable
+        .getLocalRectForCaret(
+          _textFormController.selection.extent,
+        )
+        .bottomLeft;
+
+    final adjustedOffset = Offset(
+      caretOffset.dx + contentPadding.left,
+      caretOffset.dy + 4,
     );
+    return adjustedOffset;
+  }
 
-    textPainter.layout(maxWidth: textFieldSize.width - contentPadding.horizontal);
-
-    final caretOffset = _textFormController.selection.base.offset;
-    if (caretOffset == -1) return Offset.zero;
-
-    final caretPosition = textPainter.getOffsetForCaret(
-      TextPosition(offset: caretOffset),
-      Rect.zero,
-    );
-
-    final caretHeight = textPainter.preferredLineHeight;
-    final caretY = caretPosition.dy + caretHeight;
-
-    return Offset(caretPosition.dx, caretY);
+  RenderEditable? _findRenderEditable(RenderObject? root) {
+    RenderEditable? result;
+    root?.visitChildren((child) {
+      if (child is RenderEditable) {
+        result = child;
+      } else {
+        result ??= _findRenderEditable(child);
+      }
+    });
+    return result;
   }
 
   @override
