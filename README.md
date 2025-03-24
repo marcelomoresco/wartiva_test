@@ -2,9 +2,7 @@
 
 ## Web
 
-https://github.com/user-attachments/assets/afa93214-9bb3-4c3c-8881-bdafc223a7c6
-
-## Mobile
+https://github.com/user-attachments/assets/ac80c674-159f-4232-bc50-4181e40e165a
 
 ### Time Investigating: 6:30h;
 
